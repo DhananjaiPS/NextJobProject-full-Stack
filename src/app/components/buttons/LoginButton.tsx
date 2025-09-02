@@ -6,9 +6,8 @@ import { UserContext } from "../../(group)/layout";
 import { logout } from "@/actions/logout";
 import Link from "next/link";
 import { CiLogout } from "react-icons/ci";
-import { CgFileAdd } from "react-icons/cg";
 import { FaUserLarge } from "react-icons/fa6";
-
+import { IoMdAdd } from "react-icons/io";
 export default function ProfileDropdown() {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -19,8 +18,8 @@ export default function ProfileDropdown() {
 
   async function handleLogout() {
     const res = await logout();
-    if (res.success) {
-      alert(res.message);
+    if (res?.success) {
+      alert(res?.message);
       router.push("/login");
     }
   }
@@ -87,7 +86,7 @@ export default function ProfileDropdown() {
             <>
               <DropdownMenu.Separator className="my-1 border-t" />
 
-              {!user?.company.id ? (
+              {!user?.company?.id ? (
                 <DropdownMenu.Item asChild>
                   <Link href="/company" className="p-2 hover:bg-blue-100 rounded">
                     Add Company
@@ -105,7 +104,7 @@ export default function ProfileDropdown() {
                   </DropdownMenu.Item>
                   <DropdownMenu.Item asChild>
                     <Link href="/addJobs" className="p-2 hover:bg-blue-100 rounded">
-                      <CgFileAdd size={20} className="inline mr-2" />
+                      <IoMdAdd size={20} className="inline mr-2" />
                       Add Job
                     </Link>
                   </DropdownMenu.Item>

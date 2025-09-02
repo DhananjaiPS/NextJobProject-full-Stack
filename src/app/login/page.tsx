@@ -16,7 +16,7 @@ export default function LoginPage() {
     const handleValidation = async (e:FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
-        const url = " /api/login";
+        const url = "/api/login";
         const obj = {
             email,
             password: password,

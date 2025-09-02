@@ -24,7 +24,7 @@ export default function RegisterPage() {
 
         try {
             const res = await fetch(url, {
-                method: "PATCH",
+                method: "POST",
                 body: JSON.stringify(obj),
                 headers: { "Content-Type": "application/json" }
             });

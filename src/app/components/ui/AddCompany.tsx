@@ -33,7 +33,7 @@ export default function AddCompany() {
                 company_id: data?.data?.id as string,
             });
             alert(data.message);
-            route.push("/");
+             window.location.href = "/";
         } else {
             alert(data.message);
         }
@@ -96,7 +96,7 @@ export default function AddCompany() {
                             </Button>
                         </Dialog.Close>
                         <Dialog.Close>
-                            <Button onClick={handelSubmit}>Save</Button>
+                            <Button onClick={handelSubmit}>Create My Company</Button>
                         </Dialog.Close>
                     </Flex>
                 </Dialog.Content>
