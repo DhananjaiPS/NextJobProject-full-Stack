@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import toast from "react-hot-toast";
 
+
 interface Job {
   id: string;
   title: string;   
@@ -78,7 +79,7 @@ export default function JobActionBtn({ UserHasApplied, job }: JobActionBtnProps)
         <button
           disabled={loading}
           onClick={handleApply}
-          className={`bg-orange-500 px-5 py-2 w-full sm:w-[30vh] mb-4 rounded flex justify-center items-center
+          className={`bg-orange-500 px-5 py-2 w-full sm:w-[28vh] rounded flex justify-center items-center
             hover:bg-orange-700 transition text-white text-sm
             ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
         >

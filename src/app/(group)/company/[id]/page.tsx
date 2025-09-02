@@ -7,6 +7,7 @@ import { UserContext } from "../../layout";
 import EditJobForm from "@/app/components/buttons/EditJobform";
 import Link from "next/link";
 import { FaSpinner } from 'react-icons/fa';
+import toast from "react-hot-toast";
 
 interface Job {
   id: string;
@@ -65,11 +66,12 @@ export default function CompanyWithOwnerPage() {
           setCompany(company);
           setCompanyJobs(company?.jobs ?? []);
           setOwner(owner);
+          toast.success(data?.message);
         } else {
-          console.error("API Error:", data.message);
+          toast.error("API Error:", data?.message);
         }
-      } catch (error) {
-        console.error("Error fetching company:", error);
+      } catch (error : any) {
+        toast.error("Error fetching company:", error);
       } finally {
         setLoading(false);
       }
@@ -81,8 +83,8 @@ export default function CompanyWithOwnerPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
         <div className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full mx-4">
-          <FaSpinner className="animate-spin h-12 w-12 text-blue-600 mx-auto mb-4" />
-          <p className="text-center text-gray-600 font-medium">Loading company details...</p>
+          {/* <FaSpinner className="animate-spin h-12 w-12 text-blue-600 mx-auto mb-4" /> */}
+          <p className="text-center text-gray-600 font-medium"> <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mr-2"></div>Loading company details...</p>
         </div>
       </div>
     );
@@ -106,7 +108,8 @@ export default function CompanyWithOwnerPage() {
     });
 
     const data = await res.json();
-    if (data.success) {
+    if (data?.success) {
+      toast.success(data?.message)
       setOpen(false);
       setReviewText("");
       setCompany((prev) =>
@@ -124,7 +127,7 @@ export default function CompanyWithOwnerPage() {
           : null
       );
     } else {
-      alert(data.message || "Failed to add review");
+      toast.error(data.message || "Failed to add review");
     }
   }
 
@@ -136,14 +139,14 @@ export default function CompanyWithOwnerPage() {
           body: JSON.stringify({ id }),
         });
         const data = await res.json();
-        if (data.success) {
-          alert(data.message);
-          setCompanyJobs((prev) => prev.filter((j) => j.id !== data.data.id));
+        if (data?.success) {
+          toast.success(data.message);
+          setCompanyJobs((prev) => prev.filter((j) => j?.id !== data?.data?.id));
         } else {
-          alert(data.message);
+          toast.error(data.message);
         }
       } catch (err) {
-        alert(String(err));
+        toast.error(String(err));
       }
     });
   }

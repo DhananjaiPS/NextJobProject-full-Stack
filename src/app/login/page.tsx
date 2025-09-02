@@ -5,6 +5,7 @@ import { FormEvent, useContext, useState } from "react"
 import { MainContext } from "@/app/components/context/MainContext"
 import { useRouter } from "next/navigation"
 import { LogIn, Mail, Lock, Eye, EyeOff } from "lucide-react"
+import toast, { Toaster } from "react-hot-toast";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -33,12 +34,15 @@ export default function LoginPage() {
 
             if (data.success) {
                 router.push("/");
+                toast.success("Login successfull")
             } else {
                 setError({ message: data.message || "Invalid credentials" });
+                toast.error(data.message || "Invalid credentials" )
             }
-        } catch (err) {
+        } catch (err:any) {
             console.error(err);
             setError({ message: "Server error. Please try again later." });
+            toast.error("Server error. Please try again later.")
         } finally {
             setIsLoading(false);
         }

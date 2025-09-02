@@ -3,6 +3,8 @@
 import { Dialog, Button } from "@radix-ui/themes";
 import { useContext, useEffect, useState } from "react";
 import { job } from "../../../generated/prisma";
+import toast, { Toaster } from "react-hot-toast";
+
 type Job = {
   id: string;
   title: string;
@@ -31,7 +33,7 @@ export default function ViewJobApplicant({ job }:{job:Job}) {
                 setApplicants(data?.data);
             }
             else {
-                alert(data.message)
+                toast(data.message)
             }        
     }   
     useEffect(() => {
@@ -55,7 +57,7 @@ export default function ViewJobApplicant({ job }:{job:Job}) {
         <div>
             <Dialog.Root>
                 <Dialog.Trigger>
-                    <button onClick={handelApplicants} className="bg-blue-800 px-5 py-2 w-full  sm:w-[30vh]  mb-4 rounded justify-center hover:bg-gray-800 transition text-white text-sm   items-center flex">View applicant</button>
+                    <button onClick={handelApplicants} className="bg-blue-800 px-5 py-2 w-full sm:w-[28vh] mb-4 rounded justify-center hover:bg-gray-800 transition text-white text-sm items-center flex">View applicant</button>
                 </Dialog.Trigger>
 
                 <Dialog.Content maxWidth="450px">

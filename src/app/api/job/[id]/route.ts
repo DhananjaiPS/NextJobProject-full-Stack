@@ -4,7 +4,7 @@ import { i } from "framer-motion/client";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-    const {id}=await params;
+    const { id } = await params;
     // /api/job/123
     console.log(id);
 
@@ -14,9 +14,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         where: {
             id: id
         },
-        // include:{
-        //     company:true
-        // }
+        include: {
+            company: true
+        }
 
 
 
@@ -68,24 +68,27 @@ export async function DELETE(
     const user = await getUserFromCookie();
     console.log("User:", user);
 
-    const {id} = await params;
+    const { id } = await params;
     console.log("Deleting ID:", id);
-   
-      try {
+
+    try {
         const deleted = await prismaClient.opening.delete({
-          where: { id },
+            where: { id },
         });
 
         return NextResponse.json({
-          success: true,
-          message: "Deleted successfully",
-          deleted,
+            success: true,
+            message: "Deleted successfully",
+            deleted,
         });
-      } catch (error) {
+    } catch (error) {
         console.error(error);
         return NextResponse.json(
-          { success: false, message: "Error deleting record" },
-          { status: 500 }
+            {
+                success: false,
+                message: "Error deleting record"
+            },
+            { status: 500 }
         );
-      }
+    }
 }

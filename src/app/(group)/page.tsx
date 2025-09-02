@@ -13,6 +13,7 @@ import { Heading, Text, Flex, Card, Button } from "@radix-ui/themes";
 import { FcProcess } from "react-icons/fc";
 import Carousel from "@/app/components/Carousel";
 import Footer from "../components/Footer";
+import toast from "react-hot-toast";
 
 // Custom hook for fetching jobs
 function useFetchJobs() {
@@ -62,10 +63,10 @@ export default function Home() {
     const alreadySaved = savedJobs.some((j: any) => j.job_id === jobItem.job_id);
 
     if (alreadySaved) {
-      alert("This job is already saved.");
+      toast("This job is already saved.");
     } else {
       localStorage.setItem("job", JSON.stringify([...savedJobs, jobItem]));
-      alert("Job saved successfully!");
+      toast.success("Job saved successfully!");
     }
   }
 
@@ -108,7 +109,7 @@ export default function Home() {
               { icon: Star, color: "text-yellow-500", title: "Top Talent Network", desc: "Join a platform trusted by over 50,000 professionals." }
             ].map((feature, idx) => (
               <motion.div key={idx} whileHover={{ scale: 1 }}>
-                <Card size="3" className="w-95">
+                <Card size="3" className="w-95 ">
                   <Flex direction="column" gap="3">
                     <feature.icon className={feature.color} size={32} />
                     <Heading size="4">{feature.title}</Heading>

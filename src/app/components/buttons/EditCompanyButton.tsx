@@ -4,6 +4,7 @@
 import { Dialog, Button, Flex, Text, TextField } from "@radix-ui/themes";
 import { useParams } from "next/navigation";
 import { useState, useTransition } from "react";
+import toast, { Toaster } from "react-hot-toast";
 
 export default function EditCompanyButton({ company }) {
     const [name, setName] = useState(company.name);
@@ -21,12 +22,13 @@ export default function EditCompanyButton({ company }) {
                     body: JSON.stringify(obj)
                 });
                 const data = await res.json();
-                alert(data.message);
+                toast(data.message);
                 if (data.success) {
+                    toast.success("Company Edited Successfully ")
                     window.location.reload(); // Optionally refresh data
                 }
             } catch (error) {
-                alert("An error occurred while updating.");
+                toast.error("An error occurred while updating.");
                 console.error("Error:", error);
             }
         });

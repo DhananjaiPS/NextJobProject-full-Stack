@@ -1,6 +1,7 @@
 //@ts-nocheck
 
 import React, { useTransition } from 'react'
+import toast, { Toaster } from "react-hot-toast";
 
 export default function DeleteJobBtn({id}){
   const [isPending,startTransition  ]=useTransition()
@@ -19,17 +20,17 @@ export default function DeleteJobBtn({id}){
         })
         const data = await res.json();
         if (data.success) {
-          alert(data.message);
+          toast.success(data.message);
           console.log(data.data)
           setCompanyJobs(prev => prev.filter(j => j.id !== data.data.id));
 
         }
         else {
-          alert(data.message)
+          toast(data.message)
         }
       }
-      catch (err) {
-        alert(err);
+      catch (err : any) {
+        toast.error(err);
       }
     })}
     return (

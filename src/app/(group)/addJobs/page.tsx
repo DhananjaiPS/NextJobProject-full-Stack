@@ -6,11 +6,12 @@ import { useEffect, useRef, useState } from "react";
 import type { company, opening } from "../../../../generated/prisma";
 import { GrLinkNext } from "react-icons/gr";
 import { FaMapMarkerAlt, FaBriefcase, FaClock } from "react-icons/fa";
+import toast from "react-hot-toast";
 
 type OpeningWithCompany = opening & { company?: company };
 
 export default function Page() {
-  
+
   const [jobsFromDb, setJobsFromDb] = useState<OpeningWithCompany[]>([]);
   const [scroll, setScroll] = useState(false);
   const addBtnRef = useRef<HTMLDivElement | null>(null);
@@ -49,11 +50,12 @@ export default function Page() {
         const data = await res.json();
         if (data.success) {
           setJobsFromDb(data.data);
+          toast.success(data.message);
         } else {
-          alert(data.message);
+          toast.error(data.message);
         }
       } catch (err) {
-        alert("Error fetching jobs: " + err);
+        toast.error("Error fetching jobs: " + err);
       }
     }
     fetchData();

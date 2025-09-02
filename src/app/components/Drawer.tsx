@@ -4,6 +4,7 @@ import { UserContext } from "../(group)/layout";
 import { logout } from "@/actions/logout";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import toast, { Toaster } from "react-hot-toast";
 
 export default function Drawer() {
   const [isOpen, setIsOpen] = useState(false);
@@ -17,8 +18,8 @@ export default function Drawer() {
   async function handelLogout() {
     const res = await logout();
     if (res.success) {
-      alert(res.message);
       setUser(null); // ✅ don't set to "" (string), keep type consistency
+      toast.success(res.message);
       router.push("/login");
     }
   }

@@ -1,5 +1,5 @@
 "use client";
-
+import { Toaster } from "react-hot-toast";
 import { Theme } from "@radix-ui/themes";
 import "./globals.css";
 import { useState } from "react";
@@ -17,8 +17,12 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <Theme>
-          <MainContext.Provider value={{ email, setEmail, password, setPassword }}>
+          <MainContext.Provider
+            value={{ email, setEmail, password, setPassword }}
+          >
             {children}
+            {/* Add Toaster so toast() can show notifications */}
+            <Toaster position="top-right" reverseOrder={false} />
           </MainContext.Provider>
         </Theme>
       </body>

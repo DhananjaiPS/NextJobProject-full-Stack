@@ -11,9 +11,11 @@ import {
   Select,
   Text,
 } from "@radix-ui/themes";
+
 import { UserContext } from "../../(group)/layout";
 import { FaPlus } from "react-icons/fa";
 import { useRouter } from "next/navigation";
+import toast, { Toaster } from "react-hot-toast";
 
 export default function AddJobButton({ scroll, onJobAdded }: { scroll: boolean, onJobAdded: (job: any) => void }) {
   const [open, setOpen] = useState(false);
@@ -80,7 +82,7 @@ export default function AddJobButton({ scroll, onJobAdded }: { scroll: boolean, 
         const data = await res.json();
 
         if (res.ok) {
-          alert("Job added successfully!");
+          toast.success("Job added successfully!");
           // reset fields
           onJobAdded?.({ ...data.job, tempId });
           // (you can modify parent to replace tempId with actual DB id)
@@ -103,11 +105,11 @@ export default function AddJobButton({ scroll, onJobAdded }: { scroll: boolean, 
           setOpen(false);
           router.push("/addJobs");
         } else {
-          alert(data.message || "Something went wrong!");
+          toast.error(data.message || "Something went wrong!");
         }
       });
-    } catch (error) {
-      alert("Server Error: " + error);
+    } catch (error : any) {
+      toast.error("Server Error: " + error);
       onJobAdded?.({ removeTempId: tempId });
 
     }

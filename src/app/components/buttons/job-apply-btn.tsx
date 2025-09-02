@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { opening } from "../../../../generated/prisma"; // your Prisma type
+import toast, { Toaster } from "react-hot-toast";
 
 type JobApplyBtnProps = {
   job: opening; // Prisma opening type
@@ -21,13 +22,13 @@ export default function JobApplyBtn({ job, UserHasApplied }: JobApplyBtnProps) {
           const data = await res.json();
 
           if (data?.success) {
-            alert(data.message);
+            toast.success(data.message);
             setHasApplied(true);
           } else {
-            alert(data?.message || "Apply failed");
+            toast.error(data?.message || "Apply failed");
           }
-        } catch (err) {
-          alert(err);
+        } catch (err:any) {
+          toast.error(err);
         }
       })();
     });
@@ -41,13 +42,13 @@ export default function JobApplyBtn({ job, UserHasApplied }: JobApplyBtnProps) {
           const data = await res.json();
 
           if (data?.message) {
-            alert(data.message);
+            toast.success(data.message);
           } else {
-            alert("Something went wrong while deleting");
+            toast.error("Something went wrong while deleting");
           }
           setHasApplied(false);
         } catch (err: any) {
-          alert(err?.message || err);
+          toast.error(err?.message || err);
         }
       })();
     });

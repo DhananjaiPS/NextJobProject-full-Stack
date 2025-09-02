@@ -8,6 +8,7 @@ import Drawer from "./Drawer";
 import LoginButton from "@/app/components/buttons/LoginButton";
 import { UserContext } from "../(group)/layout";
 import { ImBriefcase } from "react-icons/im";
+import toast, { Toaster } from "react-hot-toast";
 
 export default function Navbar() {
   const [input, setInput] = useState("");
@@ -17,7 +18,7 @@ export default function Navbar() {
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   if (!context) {
-    alert("context is undefined ");
+    toast("context is undefined ");
     return null;
   }
   const { user } = context;
@@ -40,6 +41,7 @@ export default function Navbar() {
         }
       } catch (err) {
         console.error("Error fetching suggestions", err);
+
       }
     }
 

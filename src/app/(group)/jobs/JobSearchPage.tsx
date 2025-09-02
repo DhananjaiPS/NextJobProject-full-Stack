@@ -7,6 +7,7 @@ import { UserContext } from "../layout";
 import { BsFilterLeft } from "react-icons/bs";
 import { IoMdClose } from "react-icons/io";
 import Link from "next/link";
+import toast from "react-hot-toast";
 
 export default function JobSearchPage() {
   const router = useRouter();
@@ -46,13 +47,17 @@ export default function JobSearchPage() {
       try {
         const res = await fetch("/api/search/suggestion?q=" + search);
         const data = await res.json();
-        if (data.success) {
-          setSuggestion(data.data);
+        if (data?.success) {
+          setSuggestion(data?.data);
+          toast.success(data?.message);
         } else {
           setSuggestion([]);
+          toast.error(data?.message);
+
         }
-      } catch {
+      } catch(err : any ) {
         setSuggestion([]);
+        toast.error(err);
       }
     }
 
@@ -69,6 +74,7 @@ export default function JobSearchPage() {
   }, [search]);
 
   // ------------------- Fetch jobs -------------------
+
   const fetchJobs = async () => {
     if (!search && !jobType && !employmentType && !minSalary) {
       setJobs([]);
@@ -81,9 +87,10 @@ export default function JobSearchPage() {
       const url = `/api/job?search=${search}&jt=${jobType}&et=${employmentType}&ms=${minSalary}`;
       const res = await fetch(url);
       const data = await res.json();
-      if (data.success) {
+      if (data?.success) {
         setJobs(data.data);
-      } else {
+      }
+      else {
         setJobs([]);
       }
     } catch (err) {

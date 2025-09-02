@@ -9,6 +9,8 @@ import DeleleApplyBtn from "@/app/components/buttons/apply-delete-btn";
 import ViewJobApplicant from "@/app/components/view-job-applicant";
 import { UserContext } from "../../layout";
 import EditJobFormModal from "@/app/components/buttons/EditJobform";
+import toast from "react-hot-toast";
+
 type Job = {
   id: string;
   title: string;
@@ -25,30 +27,38 @@ type Job = {
   job_id?: string | null;     // added
   logo?: string | null;       // added
   UserHasApplied?: boolean;
+  company?: {
+    id: string;
+    name: string;
+    ownerId: string;
+  };
 };
 
 export default function Page() {
-  const { id } = useParams<{id:string}>();
+  const { id } = useParams<{ id: string }>();
   const [job, setJob] = useState<Job | null>(null);
   const [userHasApplied, setUserHasApplied] = useState(false);
   const [activeTab, setActiveTab] = useState("description");
   const { user } = useContext(UserContext);
+  console.log("user", user);
   const company_id = user?.company_id;
   const [companyOwner, setCompanyOwner] = useState("");
   const [ispending, startTransition] = useTransition();
-  const [editingJob, setEditingJob] = useState<Job |  null >(null);
-
+  const [editingJob, setEditingJob] = useState<Job | null>(null);
+  const [showOption, setShowOption] = useState(null)
   useEffect(() => {
     startTransition(() => {
       async function fetchJob() {
         try {
           const res = await fetch(`/api/job/${id}`);
           const data = await res.json();
+          console.log(data)
+          setShowOption(data?.data);
           setJob(data.data);
           setUserHasApplied(data?.data?.UserHasApplied);
           setCompanyOwner(data.data.company_id);
-        } catch (error) {
-          console.error("Error fetching job:", error);
+        } catch (error: any) {
+          toast.error("Error fetching job:", error);
         }
       }
       fetchJob();
@@ -62,17 +72,17 @@ export default function Page() {
     });
     const data = await res.json();
     if (data.success) {
-      alert(data.message);
+      toast.success(data?.message);
       window.location.replace("/");
     } else {
-      alert(data.message);
+      toast.error(data.message);
     }
   }
 
   if (!job || ispending) {
     return (
       <p className="w-full h-[90vh] flex justify-center items-center">
-        loading...
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mr-2"></div>
       </p>
     );
   }
@@ -82,24 +92,21 @@ export default function Page() {
       {/* Side image (only desktop) */}
       <img
         src="/pic4.png"
-        alt=""
-        className="hidden sm:block w-[40%] h-[50vh] object-cover"
+        alt="job image"
+        className="hidden sm:block w-[37%] h-[70vh] object-cover"
       />
 
       <div className="w-full  sm:w-[60%]  mx-auto bg-white shadow-xl rounded-2xl p-4 sm:p-6 space-y-8">
         {/* Header */}
         <div className="flex justify-between items-start flex-col sm:flex-row gap-4">
+          <div className="flex justify-between w-full items-start ">
+
           <div className="flex-1 min-w-0">
             <div className="flex justify-between items-center w-full">
               <h1 className="text-lg sm:text-3xl font-bold text-gray-800 capitalize truncate">
                 {job.title}
               </h1>
-              <button
-                onClick={() => alert("Under Development")}
-                className="ml-2 text-blue-500 hover:text-blue-700"
-              >
-                <MdBookmarkAdd size={25} />
-              </button>
+             
             </div>
             <p className="text-gray-600 mt-1 text-sm">{job.category}</p>
             <p className="text-gray-500 mt-1 text-xs sm:text-sm capitalize">
@@ -108,26 +115,34 @@ export default function Page() {
               <span className="font-medium capitalize">{job.job_type}</span>
             </p>
           </div>
+           <button
+                onClick={() => toast.success("Under Development")}
+                className=" text-blue-500 hover:text-blue-700"
+              >
+                <MdBookmarkAdd size={25} />
+              </button>
+          </div>
 
           {/* Admin Options */}
-          {company_id === job.company_id && (
-            <DropdownMenu.Root>
-              <DropdownMenu.Trigger>
-                <button className="flex text-sm items-center gap-2 px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition w-full sm:w-auto justify-center">
-                  Options
-                  <DropdownMenu.TriggerIcon />
-                </button>
-              </DropdownMenu.Trigger>
-              <DropdownMenu.Content>
-                <DropdownMenu.Item onClick={() => setEditingJob(job)}>
-                  Edit
-                </DropdownMenu.Item>
-                <DropdownMenu.Item color="red" onClick={handelDelete}>
-                  Delete
-                </DropdownMenu.Item>
-              </DropdownMenu.Content>
-            </DropdownMenu.Root>
-          )}
+          {user?.id === job?.company?.ownerId
+            && (
+              <DropdownMenu.Root>
+                <DropdownMenu.Trigger>
+                  <button className="flex text-sm items-center gap-2 px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition w-full sm:w-auto justify-center">
+                    Options
+                    <DropdownMenu.TriggerIcon />
+                  </button>
+                </DropdownMenu.Trigger>
+                <DropdownMenu.Content>
+                  <DropdownMenu.Item onClick={() => setEditingJob(job)}>
+                    Edit
+                  </DropdownMenu.Item>
+                  <DropdownMenu.Item color="red" onClick={handelDelete}>
+                    Delete
+                  </DropdownMenu.Item>
+                </DropdownMenu.Content>
+              </DropdownMenu.Root>
+            )}
         </div>
 
         {editingJob && (
@@ -142,19 +157,21 @@ export default function Page() {
         )}
 
         {/* Action Buttons */}
-        <div className="flex flex-wrap gap-3 mt-4">
+        <div className="flex flex-wrap gap-3 mt-4 w-full   justify-center ">
           {job.apply_link && (
             <a
               href={job.apply_link}
               target="_blank"
-              className="bg-blue-500 px-5 py-2 w-full sm:w-auto rounded justify-center hover:bg-gray-800 transition text-white text-sm items-center flex"
+              className="bg-blue-500 px-3 py-2 w-full  h-[6vh] sm:w-[25vh] pt-2 pb-1 rounded justify-center hover:bg-gray-800 transition text-white text-sm items-center flex "
             >
               External Apply Now
             </a>
           )}
+
           <div className="w-full sm:w-auto">
             <DeleleApplyBtn UserHasApplied={userHasApplied} job={job as any} />
           </div>
+
           <div className="w-full sm:w-auto">
             <ViewJobApplicant job={job} />
           </div>
@@ -163,22 +180,20 @@ export default function Page() {
         {/* Tabs */}
         <div className="flex gap-4 border-b border-gray-300 pb-2 overflow-x-auto">
           <button
-            className={`pb-2 font-medium ${
-              activeTab === "description"
+            className={`pb-2 font-medium ${activeTab === "description"
                 ? "border-b-2 border-blue-500 text-blue-600"
                 : "text-gray-600 text-sm"
-            }`}
+              }`}
             onClick={() => setActiveTab("description")}
           >
             Description
           </button>
           {job.responsibilities && (
             <button
-              className={`pb-2 font-medium ${
-                activeTab === "responsibilities"
+              className={`pb-2 font-medium ${activeTab === "responsibilities"
                   ? "border-b-2 border-blue-500 text-blue-600"
                   : "text-gray-600"
-              }`}
+                }`}
               onClick={() => setActiveTab("responsibilities")}
             >
               Responsibilities
@@ -186,11 +201,10 @@ export default function Page() {
           )}
           {job.qualifications && (
             <button
-              className={`pb-2 font-medium ${
-                activeTab === "qualifications"
+              className={`pb-2 font-medium ${activeTab === "qualifications"
                   ? "border-b-2 border-blue-500 text-blue-600"
                   : "text-gray-600"
-              }`}
+                }`}
               onClick={() => setActiveTab("qualifications")}
             >
               Qualifications

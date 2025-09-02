@@ -8,22 +8,26 @@ import Link from "next/link";
 import { CiLogout } from "react-icons/ci";
 import { FaUserLarge } from "react-icons/fa6";
 import { IoMdAdd } from "react-icons/io";
+import toast from "react-hot-toast";
+import { BsStars } from "react-icons/bs";
 export default function ProfileDropdown() {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef(null);
   const router = useRouter();
   const { user } = useContext(UserContext);
   const { email, company_id } = user || {};
-  console.log("user from the menu :",user)
+  // console.log("user from the menu :",user)
 
   async function handleLogout() {
     const res = await logout();
     if (res?.success) {
-      alert(res?.message);
-      router.push("/login");
+      toast.success(res?.message);
+      window.location.href ="/";
     }
-  }
-
+    else{
+      toast.error(res?.message);
+    }
+  }  
   // Close dropdown on outside click
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -31,7 +35,6 @@ export default function ProfileDropdown() {
         setOpen(false);
       }
     }
-
     if (open) {
       document.addEventListener("mousedown", handleClickOutside);
     }
@@ -44,8 +47,9 @@ export default function ProfileDropdown() {
     <div className="relative inline-block text-left" ref={dropdownRef}>
       <DropdownMenu.Root>
         <DropdownMenu.Trigger asChild>
-          <button className="bg-white text-blue-600 font-medium px-4 py-1.5 rounded hidden sm:flex hover:bg-gray-100 transition">
-            Features
+          <button className="bg-white text-blue-600 font-medium px-4 py-1.5 rounded hidden sm:flex hover:bg-gray-100 transition flex justify-center items-center gap-1 ">
+            Features <span className="rotate-180"> <BsStars /></span>
+
           </button>
         </DropdownMenu.Trigger>
 

@@ -4,6 +4,7 @@ import { FormEvent, useContext, useState } from "react"
 import { MainContext } from "@/app/components/context/MainContext"
 import { useRouter } from "next/navigation"
 import { UserPlus, Mail, Lock, Eye, EyeOff } from "lucide-react"
+import toast, { Toaster } from "react-hot-toast";
 
 export default function RegisterPage() {
     const router = useRouter();
@@ -32,13 +33,14 @@ export default function RegisterPage() {
             console.log(data);
 
             if (data.success) {
-                alert(data.message)
+                toast.success(data.message)
                 router.push("/login"); // After register, go to login
             } else {
                 setError({ message: data.message || "Registration failed" });
             }
-        } catch (err) {
+        } catch (err:any) {
             console.error(err);
+            toast.error(err);
             setError({ message: "Server error. Please try again later." });
         } finally {
             setIsLoading(false);

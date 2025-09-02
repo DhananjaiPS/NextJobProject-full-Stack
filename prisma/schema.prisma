@@ -96,6 +96,6 @@ model application {
   user_id String  @db.ObjectId
   user    user    @relation(fields: [user_id], references: [id])
   job_id  String  @db.ObjectId
-  opening opening @relation(fields: [job_id], references: [id])
+  opening opening @relation(fields: [job_id], references: [id],  onDelete: Cascade)
   save save @relation(fields: [job_id], references: [id])
 }

@@ -9,6 +9,7 @@ import {
   Select,
   Text,
 } from "@radix-ui/themes";
+import toast, { Toaster } from "react-hot-toast";
 
 export default function EditJobFormModal({
   job,
@@ -73,14 +74,14 @@ export default function EditJobFormModal({
       try {
         const data = await res.json();
         if (data.success) {
-          alert("Job updated successfully!");
+          toast.success("Job updated successfully!");
           onSave?.(data.data);
           setOpen(false);
         } else {
-          alert(data.message || "Something went wrong!");
+          toast.error(data.message || "Something went wrong!");
         }
       } catch {
-        alert("Invalid response from server");
+        toast.error("Invalid response from server");
       }
     });
   }
