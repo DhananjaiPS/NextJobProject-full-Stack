@@ -5,12 +5,17 @@ export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // Ignore static files and API routes
-  if (pathname.startsWith('/_next') || pathname.startsWith('/api') || pathname.includes('.')) {
+  if (
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/api") ||
+    pathname.includes(".")
+  ) {
     return NextResponse.next();
   }
 
-  if (!token && pathname !== '/login') {
-    return NextResponse.redirect(new URL('/login', request.url));
+  // Allow unauthenticated access to login and register
+  if (!token && pathname !== "/login" && pathname !== "/register") {
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
   return NextResponse.next();
