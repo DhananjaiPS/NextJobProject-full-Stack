@@ -17,7 +17,7 @@ export async function DELETE(req: NextRequest) {
         }
     })
     console.log(owner);
-    if (user.id !== owner?.company.ownerId) {
+    if (user?.id !== owner?.company.ownerId) {
         return NextResponse.json({
             success: false,
             message: "Only Owner have the permission to delete there own job..."

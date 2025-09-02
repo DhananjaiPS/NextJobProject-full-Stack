@@ -15,6 +15,7 @@ export default function ProfileDropdown() {
   const router = useRouter();
   const { user } = useContext(UserContext);
   const { email, company_id } = user || {};
+  console.log("user from the menu :",user)
 
   async function handleLogout() {
     const res = await logout();
@@ -86,7 +87,7 @@ export default function ProfileDropdown() {
             <>
               <DropdownMenu.Separator className="my-1 border-t" />
 
-              {!company_id ? (
+              {!user?.company.id ? (
                 <DropdownMenu.Item asChild>
                   <Link href="/company" className="p-2 hover:bg-blue-100 rounded">
                     Add Company
@@ -96,7 +97,7 @@ export default function ProfileDropdown() {
                 <>
                   <DropdownMenu.Item asChild>
                     <Link
-                      href={`/company/${company_id}`}
+                      href={`/company/${user?.company?.id}`}
                       className="p-2 hover:bg-blue-100 rounded"
                     >
                       Company Details

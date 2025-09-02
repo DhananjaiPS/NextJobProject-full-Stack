@@ -3,9 +3,10 @@ import prismaClient from "@/service/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { CgPathCrop } from "react-icons/cg";
 
-export async function GET(req:NextRequest,{params}:{params:{id:string}}){
+export async function GET(req:NextRequest,{params}:{params:Promise<{id:string}>}){
     const user=await getUserFromCookie();  //current user details using the cookie token "email" to fetch all
-    const job_id=params.id
+    const {id}=await params
+    const job_id=id
 
     if(!user){
         return NextResponse.json({

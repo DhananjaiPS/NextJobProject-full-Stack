@@ -8,46 +8,40 @@ export default function AddCompany() {
 
     const { user, setUser } = useContext(UserContext);
     console.log("user: add", user)
-
-    const { company_id, email } = user;
+    const email= user?.email
+    const company_id=user?.company_id
     console.log("add Company btn :", company_id, email);
     const [name, setName] = useState("")
     const [description, setDescription] = useState("")
     const route = useRouter();
-    async function handelSubmit() {
+   async function handelSubmit() {
+    if (!user) return; // make sure user exists
 
-        const obj = { name, description };
+    const obj = { name, description };
 
-        try {
-            const res = await fetch(" /api/company/", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(obj),
+    try {
+        const res = await fetch("/api/company/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(obj),
+        });
+
+        const data = await res.json();
+        if (data.success) {
+            setUser({
+                ...user, // TypeScript now knows user is defined
+                company_id: data?.data?.id as string,
             });
-
-            if (!res.ok) {
-                const errorText = await res.text(); //  read response safely
-                console.error("Server error:", errorText);
-                return;
-            }
-
-            const data = await res.json(); //  Safe to parse now
-            if (data.success) {
-                console.log("Response from API:", data.data);
-                setUser({ ...user, company_id: data?.data?.id });
-                alert(data.message)
-                route.push("/")
-            }
-            else {
-                alert(data.message)
-            }
-
-        } catch (err) {
-            console.error("Failed to submit company:", err);
+            alert(data.message);
+            route.push("/");
+        } else {
+            alert(data.message);
         }
+    } catch (err) {
+        console.error("Failed to submit company:", err);
     }
+}
+
 
 
 

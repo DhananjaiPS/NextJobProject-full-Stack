@@ -63,12 +63,12 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
 export async function DELETE(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     const user = await getUserFromCookie();
     console.log("User:", user);
 
-    const id = params.id;
+    const {id} = await params;
     console.log("Deleting ID:", id);
    
       try {

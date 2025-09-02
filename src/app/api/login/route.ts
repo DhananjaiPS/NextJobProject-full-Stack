@@ -1,8 +1,8 @@
 import prismaClient from "@/service/prisma";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 
-export async function POST(req:NextResponse){
+export async function POST(req:NextRequest){
     const body = await req.json(); // ✅ Correct way to get body
     const email = body.email;
     const password = body.password;

@@ -1,7 +1,7 @@
 "use client"
 
 import { FormEvent, useContext, useState } from "react"
-import { MainContext } from "../layout"
+import { MainContext } from "@/app/components/context/MainContext"
 import { useRouter } from "next/navigation"
 import { UserPlus, Mail, Lock, Eye, EyeOff } from "lucide-react"
 

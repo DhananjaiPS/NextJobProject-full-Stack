@@ -1,5 +1,7 @@
+import { Box, Tabs, Text } from "@radix-ui/themes";
+import { company } from "../../../generated/prisma";
 
-export default function companylistingreview({ company }) {
+export default function companylistingreview({ company }:{company:company}) {
 	return (
 		<div>
 			<Tabs.Root defaultValue="account">

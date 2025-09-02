@@ -10,6 +10,7 @@ import { FaMapMarkerAlt, FaBriefcase, FaClock } from "react-icons/fa";
 type OpeningWithCompany = opening & { company?: company };
 
 export default function Page() {
+  
   const [jobsFromDb, setJobsFromDb] = useState<OpeningWithCompany[]>([]);
   const [scroll, setScroll] = useState(false);
   const addBtnRef = useRef<HTMLDivElement | null>(null);
@@ -112,7 +113,7 @@ export default function Page() {
                 key={index}
                 className="bg-blue-500 text-white shadow-md rounded-xl p-6 border hover:shadow-lg transition-all duration-300 w-[49vh] h-[30vh]"
               >
-                <Link href={`/jobs/${item.id}`}>
+                <Link href={item.id ? `/jobs/${item.id}` : '#'}>
                   <div>
                     <h3 className="text-lg font-semibold mb-2 hover:text-blue-600 transition-colors">
                       {item.title}

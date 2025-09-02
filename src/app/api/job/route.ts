@@ -1,5 +1,5 @@
 import prismaClient from "@/service/prisma";
-import { parseAppSegmentConfig } from "next/dist/build/segment-config/app/app-segment-config";
+
 import { NextRequest, NextResponse } from "next/server";
 
 
@@ -107,8 +107,8 @@ export async function GET(req: NextRequest) {
 
 
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
-  const id = params.id;
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const {id} =await  params
   try {
     const body = await req.json();
     console.log("Received data:", body);

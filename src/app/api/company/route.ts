@@ -13,6 +13,16 @@ export async function POST(req: NextRequest) {
             message: "User not found"
         })
     }
+    const existingCompany = await prismaClient.company.findUnique({
+  where: { ownerId: user.id },
+});
+
+if (existingCompany) {
+  return NextResponse.json({
+    success: false,
+    message: "You already have a company registered",
+  });
+}
     const obj = {
         name: body.name ,
         description: body.description ,
@@ -38,10 +48,11 @@ export async function POST(req: NextRequest) {
 
         }
     }
-    catch(err){
+    catch(err:any){
+        console.log(err);
         return NextResponse.json({
             success:false,
-            message:"DB create falied "
+            message:err
         })
     }
 

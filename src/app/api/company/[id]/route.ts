@@ -2,9 +2,9 @@ import { getUserFromCookie } from "@/Helper/helper";
 import prismaClient from "@/service/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
-        const id = params.id;
+        const {id} = await params;
         console.log("id aa rhi h", id);
 
         if (!id) {
@@ -61,13 +61,13 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
 
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 
     //id you use  {params}: { params: { id: string } } then only it will work as it desture and then use lese undefine
 
 
     try {
-        const id = params?.id
+        const {id} = await  params
         const body = await req.json()
         const user = await getUserFromCookie();
         const user_id = user?.id
@@ -117,7 +117,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
 
     }
-    catch (err) {
+    catch (err:any) {
         return NextResponse.json({
             success: false,
             message: err?.message
