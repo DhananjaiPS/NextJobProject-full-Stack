@@ -6,7 +6,9 @@ import { useParams } from "next/navigation";
 import { useState, useTransition } from "react";
 import toast, { Toaster } from "react-hot-toast";
 
-export default function EditCompanyButton({ company }) {
+export default function 
+
+EditCompanyButton({ company }) {
     const [name, setName] = useState(company.name);
     const [des, setDes] = useState(company.description);
     const [isPending, startTransition] = useTransition();

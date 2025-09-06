@@ -1,14 +1,17 @@
 "use client";
 import EditCompanyButton from "@/app/components/buttons/EditCompanyButton";
-import { Tabs, Text, Box, Dialog } from "@radix-ui/themes";
+import { Tabs, Box, Dialog } from "@radix-ui/themes";
 import { useParams } from "next/navigation";
 import { useContext, useEffect, useState, useTransition } from "react";
 import { UserContext } from "../../layout";
 import EditJobForm from "@/app/components/buttons/EditJobform";
 import Link from "next/link";
-import { FaSpinner } from 'react-icons/fa';
 import toast from "react-hot-toast";
-
+import { GrMapLocation } from "react-icons/gr";
+import { TfiBriefcase } from "react-icons/tfi";
+import { MdOutlineCurrencyRupee } from "react-icons/md";
+import { FiPlus } from "react-icons/fi";
+import DeleteJobDialog from "@/app/components/buttons/DeleteJobDialog";
 interface Job {
   id: string;
   title: string;
@@ -23,14 +26,13 @@ interface User {
   email: string;
   id: string;
   role: string;
-  company_id?: string; // ✅ added, since you check user.company_id
+  company_id?: string;
+  company?: { id: string };
 }
 
 interface Review {
   content: string;
-  user: {
-    email: string;
-  };
+  user: { email: string };
 }
 
 interface Company {
@@ -42,8 +44,8 @@ interface Company {
 }
 
 export default function CompanyWithOwnerPage() {
-  const [editingJob, setEditingJob] = useState<Job | null>(null); // ✅ typed correctly
-  const { user } = useContext(UserContext) as { user: User }; // ✅ strong typing
+  const [editingJob, setEditingJob] = useState<Job | null>(null);
+  const { user } = useContext(UserContext) as { user: User };
   const params = useParams();
   const id = params.id as string;
   const [isPending, startTransition] = useTransition();
@@ -53,7 +55,14 @@ export default function CompanyWithOwnerPage() {
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [reviewText, setReviewText] = useState("");
-  const [companyJobs, setCompanyJobs] = useState<Job[]>([]); // ✅ type Job[]
+  const [companyJobs, setCompanyJobs] = useState<Job[]>([]);
+
+  // ✅ Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const jobsPerPage = 5;
+  const totalPages = Math.ceil(companyJobs.length / jobsPerPage);
+  const startIndex = (currentPage - 1) * jobsPerPage;
+  const currentJobs = companyJobs.slice(startIndex, startIndex + jobsPerPage);
 
   useEffect(() => {
     async function fetchDetails() {
@@ -66,12 +75,12 @@ export default function CompanyWithOwnerPage() {
           setCompany(company);
           setCompanyJobs(company?.jobs ?? []);
           setOwner(owner);
-          toast.success(data?.message);
+          toast.success(data?.message || "Company Details Loaded Successfully");
         } else {
-          toast.error("API Error:", data?.message);
+          toast.error(data?.message || "Failed to fetch company");
         }
-      } catch (error : any) {
-        toast.error("Error fetching company:", error);
+      } catch (error: any) {
+        toast.error("Error fetching company: " + error.message);
       } finally {
         setLoading(false);
       }
@@ -81,11 +90,9 @@ export default function CompanyWithOwnerPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
-        <div className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full mx-4">
-          {/* <FaSpinner className="animate-spin h-12 w-12 text-blue-600 mx-auto mb-4" /> */}
-          <p className="text-center text-gray-600 font-medium"> <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mr-2"></div>Loading company details...</p>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center gap-7">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            Loading company details...
       </div>
     );
   }
@@ -101,94 +108,107 @@ export default function CompanyWithOwnerPage() {
       user_id: user?.id,
     };
 
-    const res = await fetch(`/api/company/review`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(object),
-    });
+    try {
+      const res = await fetch(`/api/company/review`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(object),
+      });
 
-    const data = await res.json();
-    if (data?.success) {
-      toast.success(data?.message)
-      setOpen(false);
-      setReviewText("");
-      setCompany((prev) =>
-        prev
-          ? {
+      const data = await res.json();
+      if (data?.success) {
+        toast.success(data?.message);
+        setOpen(false);
+        setReviewText("");
+        setCompany((prev) =>
+          prev
+            ? {
               ...prev,
               review: [
                 ...prev.review,
                 {
                   content: reviewText,
-                  user: { email: data?.user?.email ?? "Anonymous" }, // ✅ fallback for TS
+                  user: { email: data?.user?.email ?? "Anonymous" },
                 },
               ],
             }
-          : null
-      );
-    } else {
-      toast.error(data.message || "Failed to add review");
+            : null
+        );
+      } else {
+        toast.error(data.message || "Failed to add review");
+      }
+    } catch (err: any) {
+      toast.error("Error: " + err.message);
     }
   }
 
-  async function handelDeleteJob(id: string) {
+  async function handelDeleteJob(jobId: string) {
     startTransition(async () => {
       try {
         const res = await fetch(`/api/company/latestJob`, {
           method: "DELETE",
-          body: JSON.stringify({ id }),
+          body: JSON.stringify({ id: jobId }),
         });
         const data = await res.json();
         if (data?.success) {
           toast.success(data.message);
-          setCompanyJobs((prev) => prev.filter((j) => j?.id !== data?.data?.id));
+          setCompanyJobs((prev) => prev.filter((j) => j?.id !== jobId));
         } else {
           toast.error(data.message);
         }
-      } catch (err) {
-        toast.error(String(err));
+      } catch (err: any) {
+        toast.error("Error: " + err.message);
       }
     });
   }
 
-
-
-
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       {/* Header */}
-      <div className="bg-white border-b shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-4 gap-3 flex  flex-col sm:flex-row justify-between items-center ">
-          <div className="flex items-center justify-center sm:justify-normal sm:flex-row gap-4 w-full">
-            <div className="bg-blue-500 w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-lg">
-              {company.name[0].toUpperCase()}
+      <div className="bg-white">
+        <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col sm:flex-row justify-between items-center gap-6">
+          {/* Company Info */}
+          <div className="flex flex-col gap-4 w-full lg:w-1/2">
+            <div className="flex gap-7">
+              <div className="bg-blue-600 w-17 sm:w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-md">
+                {company.name[0].toUpperCase()}
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-800">{company.name}</h1>
+                <p className="text-sm text-gray-500">Company Profile</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-xl font-bold">{company.name}</h1>
-              <p className="text-sm text-gray-500">Company Profile</p>
-            </div>
+
+            {id === user?.company?.id && (
+              <div className="flex justify-center">
+                <EditCompanyButton company={company} />
+              </div>
+            )}
           </div>
-          {id == user.company_id &&
-            <div className="flex gap-2">
 
-
-              <EditCompanyButton company={company} />
-
-            </div>}
-
+          {/* Company Image */}
+          <div className="w-full lg:w-1/2 flex justify-center p-4">
+            <video
+              src="/pro3.webm"
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full h-52 sm:h-60 lg:h-72 object-contain transition-transform duration-300 hover:scale-105"
+            />
+          </div>
         </div>
       </div>
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-6 flex flex-col lg:grid-cols-3 gap-6">
-        {/* Company Info */}
-        <div className="lg:col-span-2 space-y-4  ">
-          <div className="bg-white p-4 rounded-lg border">
+        <div className="lg:col-span-2 space-y-4">
+          <div className="bg-white mt-6 p-4 rounded-2xl shadow-md hover:shadow-lg transition duration-300">
             <h2 className="font-semibold text-lg mb-2">About Company</h2>
             <p>{company.description || "No description provided."}</p>
           </div>
 
-          <div className="bg-white p-4 rounded-lg border">
+          <div className="bg-white mt-6 p-4 rounded-2xl shadow-md hover:shadow-lg transition duration-300">
             <h2 className="font-semibold text-lg mb-4">Company Details</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
               <div>
@@ -200,7 +220,7 @@ export default function CompanyWithOwnerPage() {
         </div>
 
         {/* Sidebar Tabs */}
-        <div className="">
+        <div>
           <Tabs.Root defaultValue="jobs">
             <Tabs.List>
               <Tabs.Trigger value="jobs">Latest Jobs</Tabs.Trigger>
@@ -208,60 +228,98 @@ export default function CompanyWithOwnerPage() {
             </Tabs.List>
 
             <Box pt="3">
+              {/* Jobs Tab */}
               <Tabs.Content value="jobs">
-                {companyJobs.length === 0 && <div>No jobs available.</div>}
-                {companyJobs.map( job  => (
-                
-                <div key={job.id} className="border p-4 rounded-md">
-                  <Link href={`/jobs/${job.id}`}>
-                  <h3 className="font-semibold">{job.title}</h3>
-                  <p>{job.description}</p>
-                  </Link>
-                  <div className="flex gap-2 mt-2">
-                    <button
-                      onClick={() => setEditingJob(job)}
-                      className="px-3 py-1 bg-blue-500 text-white rounded"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handelDeleteJob(job.id)}
-                      className="px-3 py-1 bg-red-500 text-white rounded"
-                      disabled={isPending}
-                    >
-                      Delete
-                    </button>
+                {currentJobs.length === 0 && <div>No jobs available.</div>}
+                {currentJobs.map((job) => (
+                  <div
+                    key={job.id}
+                    className="group relative border border-gray-200 bg-white rounded-2xl p-5 shadow-sm hover:shadow-xl transition-all duration-300"
+                  >
+                    <Link href={`/jobs/${job.id}`}>
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-800 capitalize group-hover:text-blue-600 transition line-clamp-1 ">
+                          {job.title.slice(0, 20)}{job.title.length > 25 && "..."}
+                          </h3>
+                          <p className="mt-1 text-sm text-gray-600 line-clamp-1 sm:line-clamp-2  w-[10vh] sm:w-[90%] ">
+                            {job.description}
+                          </p>
+                        </div>
+                        <span className="ml-3 text-xs bg-blue-100 text-blue-600 font-medium px-2 py-1 rounded-full ">
+                          {job.job_type || "On-site"}
+                        </span>
+                      </div>
+                    </Link>
+
+                    <div className="mt-4 flex items-center justify-between">
+                      <div className="flex flex-col text-sm text-gray-500">
+                        <span className="flex items-center gap-1">
+                          <GrMapLocation /> {job.location || "Remote"}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <TfiBriefcase /> {job.employment_type || "Full-time"}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <MdOutlineCurrencyRupee /> {job.salary?.toLocaleString() || "Not disclosed"}
+                        </span>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setEditingJob(job)}
+                          className="px-3 py-1.5 text-sm font-medium bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 transition"
+                        >
+                          Edit
+                        </button>
+                        <DeleteJobDialog
+  jobId={job.id}
+  onDelete={handelDeleteJob}
+  isPending={isPending}
+/>
+
+                      </div>
+                    </div>
                   </div>
-                </div> 
+
                 ))}
+
+                {/* Pagination */}
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
 
                 {editingJob && (
                   <EditJobForm
                     job={editingJob}
                     onSave={(newjob) => {
-                      setCompanyJobs(prev =>
-                        prev.map(j => j?.id === newjob?.id ? newjob : j)
+                      setCompanyJobs((prev) =>
+                        prev.map((j) => (j?.id === newjob?.id ? newjob : j))
                       );
                       setEditingJob(null);
                     }}
                     onCancel={() => setEditingJob(null)}
                   />
                 )}
-
               </Tabs.Content>
 
+              {/* Reviews Tab */}
               <Tabs.Content value="reviews">
-
                 <Dialog.Root open={open} onOpenChange={setOpen}>
                   <Dialog.Trigger>
-                    <button className="mb-3 bg-green-500 text-white px-3 py-1 rounded text-sm">
-                      Add Review
+                    <button className="mb-3 bg-blue-600 text-white px-3 py-1 gap-4 rounded text-sm h-[6vh] w-[32vh] flex justify-center items-center">
+                      <FiPlus size={25}/>
+                     Add Company Review
                     </button>
                   </Dialog.Trigger>
 
                   <Dialog.Content maxWidth="450px">
                     <Dialog.Title>Add a Review</Dialog.Title>
-                    <Dialog.Description>Share your experience about this company.</Dialog.Description>
+                    <Dialog.Description>
+                      Share your experience about this company.
+                    </Dialog.Description>
 
                     <textarea
                       className="w-full border rounded-md mt-4 p-2"
@@ -273,7 +331,9 @@ export default function CompanyWithOwnerPage() {
 
                     <div className="flex justify-end mt-4 gap-3">
                       <Dialog.Close>
-                        <button className="px-4 py-2 bg-gray-200 rounded-md">Cancel</button>
+                        <button className="px-4 py-2 bg-gray-200 rounded-md">
+                          Cancel
+                        </button>
                       </Dialog.Close>
                       <button
                         className="px-4 py-2 bg-blue-600 text-white rounded-md"
@@ -291,7 +351,7 @@ export default function CompanyWithOwnerPage() {
                   company.review.map((rev, index) => (
                     <div
                       key={index}
-                      className="border rounded p-3 mb-3 bg-white"
+                      className="rounded-2xl shadow-md hover:shadow-lg transition duration-300  p-3 mb-3 bg-white"
                     >
                       <p className="text-gray-800">{rev.content}</p>
                       <p className="text-sm text-gray-500 mt-1">
@@ -305,7 +365,7 @@ export default function CompanyWithOwnerPage() {
           </Tabs.Root>
 
           {/* Owner Info */}
-          <div className="bg-white mt-6 p-4 border rounded-lg">
+          <div className="bg-white mt-6 p-4 rounded-2xl shadow-lg hover:shadow-xl transition">
             <div className="text-center">
               <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto text-white font-bold text-2xl">
                 {owner.email[0].toUpperCase()}
@@ -323,12 +383,61 @@ export default function CompanyWithOwnerPage() {
                 <p className="text-gray-900 font-mono">{owner.id}</p>
               </div>
               <button className="mt-4 w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 text-sm">
-                Contact Owner
+                <Link href={`mailto:${owner.email}`}>Contact Owner</Link>
+
               </button>
             </div>
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ✅ Pagination Component
+function Pagination({
+  currentPage,
+  totalPages,
+  onPageChange,
+}: {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}) {
+  if (totalPages <= 1) return null;
+
+  const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+
+  return (
+    <div className="flex justify-center mt-4 gap-2">
+      <button
+        onClick={() => onPageChange(Math.max(currentPage - 1, 1))}
+        disabled={currentPage === 1}
+        className="px-3 py-1 border rounded disabled:opacity-50"
+      >
+        {"<"}
+      </button>
+
+      {pages.map((page) => (
+        <button
+          key={page}
+          onClick={() => onPageChange(page)}
+          className={`px-3 py-1 border rounded ${currentPage === page
+              ? "bg-blue-600 text-white"
+              : "bg-white text-gray-700 hover:bg-gray-100"
+            }`}
+        >
+          {page}
+        </button>
+      ))}
+
+      <button
+        onClick={() => onPageChange(Math.min(currentPage + 1, totalPages))}
+        disabled={currentPage === totalPages}
+        className="px-3 py-1 border rounded disabled:opacity-50"
+      >
+        {">"}
+      </button>
     </div>
   );
 }
